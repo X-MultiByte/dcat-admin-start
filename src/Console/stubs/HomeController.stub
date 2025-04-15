@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Admin\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Admin\Metrics\Examples\TotalAdmin;
+use Dcat\Admin\Layout\Column;
+use Dcat\Admin\Layout\Content;
+use Dcat\Admin\Layout\Row;
+
+class HomeController extends Controller
+{
+    public function index( Content $content ): Content
+    {
+        return $content
+            ->header('Dashboard')
+            ->description(' ')
+            ->body(function ( Row $row ) {
+                $row->column(12, function ( Column $column ) {
+                    $column->row(function ( Row $row ) {
+                        $row->column(4, new TotalAdmin());
+                    });
+                });
+            });
+    }
+}

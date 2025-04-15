@@ -1,0 +1,127 @@
+<?php
+
+namespace DummyNamespace;
+
+use Dcat\Admin\Widgets\Metrics\Card;
+use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
+
+
+class TotalAdmin extends Card
+{
+    protected $cardTitle = 'Administrators';
+
+    protected Model $admin;
+
+    /**
+     * 卡片底部内容.
+     *
+     * @var string|Renderable|\Closure
+     */
+    protected     $footer;
+    protected int $total = 0;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $model       = config('admin.database.users_model');
+        $this->admin = new $model;
+    }
+
+    /**
+     * 初始化卡片.
+     */
+    protected function init(): void
+    {
+        parent::init();
+
+        $this->title($this->cardTitle);
+        $this->dropdown([
+            '0'   => 'All',
+            '7'   => 'Last 7 Days',
+            '28'  => 'Last 28 Days',
+            '30'  => 'Last Month',
+            '365' => 'Last Year',
+        ]);
+    }
+
+    /**
+     * 处理请求.
+     *
+     * @param  Request  $request
+     *
+     * @return void
+     */
+    public function handle( Request $request ): void
+    {
+        $days        = (int) $request->get('option', 0);
+        $this->total = $this->getTotalAdmin($days);
+
+        $this->content($this->total);
+    }
+
+    /**
+     * 设置卡片底部内容.
+     *
+     * @param   $footer
+     *
+     * @return $this
+     */
+    public function footer( $footer ): static
+    {
+        $this->footer = $footer;
+
+        return $this;
+    }
+
+    /**
+     * 渲染卡片内容.
+     *
+     * @return string
+     */
+    public function renderContent(): string
+    {
+        $content = parent::renderContent();
+
+        return <<<HTML
+            <div class="small-box bg-transparent m-1">
+              <div class="inner">
+                <h3>{$content}</h3>
+
+                <p>Accounts</p>
+              </div>
+              <div class="icon text-muted">
+                <i class="fa fa-users"></i>
+              </div>
+              <div class="text-center" style="color:#3D3D3D">
+              {$this->renderFooter()}
+              </div>
+            </div>
+            HTML;
+    }
+
+    /**
+     * 渲染卡片底部内容.
+     *
+     * @return string
+     */
+    public function renderFooter(): string
+    {
+        return $this->toString($this->footer);
+    }
+
+    protected function getTotalAdmin( int $days = 0 ): int
+    {
+        $total = 0;
+
+        if ($days === 0) {
+            $total = $this->admin->newQuery()->count();
+        }
+        else {
+            $total = $this->admin->newQuery()->whereBetween('created_at', [ now()->subDays($days), now() ])->count();
+        }
+
+        return $total;
+    }
+}
