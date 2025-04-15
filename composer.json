@@ -1,6 +1,6 @@
 {
-  "name": "x-multibyte/dcat-admin",
-  "description": "dcat admin",
+  "name": "x-multibyte/dcat-admin-start",
+  "description": "dcat admin start",
   "type": "library",
   "keywords": [
     "dcat",
